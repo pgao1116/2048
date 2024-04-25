@@ -27,15 +27,29 @@ impl Board {
 		let mut left: usize = 0; 
 		let mut right: usize = left + 1; 
 
+		// Combine if adjacents are the same
 		for _ in 0..3 {
 			if list[left] == list[right] {
 				list[left] += list[right]; 
 				list[right] = 0; 	
 			} 
+
+			// Copy item to the right of the current spot, INTO the current spot. (LEFT shift)
+			let mut j = 0; 
+			while j < 3 {
+				if list[j] == 0 {
+					list[j] = list[j + 1]; 
+					list[j + 1] = 0; 
+				}
+				j = j + 1; 
+			} 
+
+			left = left + 1;
+			right = right + 1; 
 		} 	
 	}
 	
-	// Updates the board 
+	// Updates the board, using shift
 	pub fn update_board(&self, key: KeyStroke) {
 		
 		for i in 0..self.mat.len() {
@@ -45,12 +59,44 @@ impl Board {
 					NO_KEY => continue, 
 
 					KEY_LEFT =>  {
-
+						// Copies row of the board into a Vec
+						for i in 0..4 {
+							let mut row: Vec<usize> = Vec::new(); 
+							for j in 0..4 {
+								row.push(self.mat[i][j]); 
+							} 	
+						
+							// Buggy code below, need shift to be called once!! 	
+							// Does a left-shift, and copies the row back into the board
+							shift(&mut row); 
+							shift(&mut row); 
+							
+							for j in 0..4 { 
+								board[i][j] = row[j]; 
+							} 
+						} 
 
 					}, 
 				
-					KEY_RIGHT => {
-
+					KEY_RIGHT => {	
+						// Copies row of the board into a Vec
+						for i in 0..4 {
+							let mut row: Vec<usize> = Vec::new(); 
+							for j in 0..4 {
+								row.push(self.mat[i][j]); 
+							} 	
+							
+							// By reversing the array, shifting left, and reversing again, 
+							// the shift function, can be repurposed for a right-shift.	
+							row.reverse();
+							shift(&mut row); 
+							shift(&mut row); 
+							row.reverse();
+							
+							for j in 0..4 { 
+								board[i][j] = row[j]; 
+							} 
+						} 
 					}, 
 				
 					KEY_UP => {
