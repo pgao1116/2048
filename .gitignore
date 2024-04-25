@@ -2,3 +2,5 @@
 #https://stackoverflow.com/questions/43667176/what-files-in-a-cargo-project-should-be-in-my-gitignore
 ./game/target/*
 /game/target/
+.vscode/
+.DS_Store
