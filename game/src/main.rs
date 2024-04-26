@@ -1,37 +1,32 @@
 #[macro_use] extern crate rocket; 
 use rocket::serde::json::Json; 
 use board::Board; 
+use std::boxed::Box;
+use std::option::Option; 
 
 // Serve HTML
 #[get("/")]
-fn index() -> Json() {
-	
-	let const filepath = "../../2048.html"
+fn index() -> Json() {	
+	const filepath = "../../2048.html";
 	let serving = rocket::fs::NamedFile(filepath); 
 	Json(serving)
 }
 
 // Returns JSON of the new game state
-#[get("/gamestate"), ("")]
-fn handle_get(board: &Board) -> _ { 
-	
-	match () {
-		Some() => 
-		None => 	
-	}
-	
-	Json();  
+#[get("/gamestate")]
+fn handle_get(board: Option<& mut Board>) -> _ { 
+	todo!();	
 } 
 
 // Takes user's keystroke and updates board
 #[post("/keystroke")]
-fn handle_post(data: KeyStroke, board: &board) {
+fn handle_post(data: KeyStroke, board: Option<& mut Board> ) {
 
-	// Do somthing to update the state of the game	
+	// Do something to update the state of the game	
 
 	board.moves = board.moves + 1; 	
-	if !board.game_terminates() {
-		board.process_key(data); 
+	if !board.terminate_game() {
+		board.update_board(data); 
 	} else {
 		return Json(board.final_state()); 
 	} 
@@ -49,7 +44,8 @@ fn not_found() -> ... {
 fn rocket() -> _ {
 	
 	// Do something with the board
-	let mut board = Board::new(); 
+	// Unsure of syntax
+	let mut board = Option<Board::new()>; 
 
 	// Serve's HTML, and waits for GET and POST requests
 	rocket::build()
