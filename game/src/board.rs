@@ -10,6 +10,8 @@ pub enum KeyStroke {
 	KEY_UP,					// ... Up arrow pressed
 }
 
+#[derive(Deserialize, Serialize)]
+#[serde(crate = "rocket::serde")]
 pub struct Board {
 	mat : [i32; 4]; 4],		// The board
 	game_over: bool, 		 
