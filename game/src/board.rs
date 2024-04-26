@@ -14,7 +14,6 @@ pub struct Board {
 	mat : [i32; 4]; 4],		// The board
 	game_over: bool, 		 
 	moves: i64, 			// The number of moves (key's pressed)	
-	keystroke: KeyStroke	// The current keystroke
 	score: i64, 			
 } 
 
@@ -50,7 +49,7 @@ impl Board {
 	}
 	
 	// Updates the board, using shift
-	pub fn update_board(&self, key: KeyStroke) {
+	pub fn update_board(& mut self, key: KeyStroke) {
 		
 		for i in 0..self.mat.len() {
 			for j in 0..self.mat[i].len() {
@@ -100,10 +99,39 @@ impl Board {
 					}, 
 				
 					KEY_UP => {
-
+					
+						// Copies the columns into a Vec	
+						for i in 0..4 {
+							let mut col: Vec<usize> = Vec::new(); 	
+							for j in 0..4 {
+								col.push(self.mat[j][i]); 
+							} 
+					
+							shift(&mut col); 
+							shift(&mut col); 
+							
+							for j in 0..4 {
+								board[i][j] = col[i]; 
+							} 	
 					}, 
 						
 					KEY_DOWN => {
+
+						// Copies the columns into a Vec	
+						for i in 0..4 {
+							let mut col: Vec<usize> = Vec::new(); 	
+							for j in 0..4 {
+								col.push(self.mat[j][i]); 
+							} 
+							
+							col.reverse(); 	
+							shift(&mut col); 
+							shift(&mut col); 
+							col.reverse(); 	
+							
+							for j in 0..4 {
+								board[i][j] = col[i]; 
+							} 	
 
 					}, 
  				} 		
@@ -115,7 +143,7 @@ impl Board {
 
 
 	pub fn terminate_game() { 
-
+		todo!();
 	} 
  
 } 
