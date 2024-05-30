@@ -10,6 +10,7 @@ pub enum KeyStroke {
 	KEY_UP,					// ... Up arrow pressed
 }
 
+
 #[derive(Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Board {
@@ -21,17 +22,36 @@ pub struct Board {
 
 impl Board {
 
+	// Initializes the board	
+	pub fn new (& mut self) -> &Board {
+		
+		for i in 0..self.mat.len() {
+			for j in 0.self.mat[i].len() {
+				self[i][j] = 0; 
+			}
+		}
+
+		self.game_over = false;
+		self.moves = 0;
+		self.score = 0; 
+
+		self;
+
+	} 
+
 	// Performs a shift to the left 
 	// i.e. let l = [4, 0, 0, 4], then shift(l) -> [4, 4, 0, 0].
 	// do shift(l) again, and I get [8, 0, 0, 0], buggy as of now. 
-	fn shift(list :&mut Vec<usize>) {
+	fn shift(list :&mut Vec<usize>) -> u32 {
 		let mut left: usize = 0; 
 		let mut right: usize = left + 1; 
+		let mut sum : u32 = 0; 
 
 		// Combine if adjacents are the same
 		for _ in 0..3 {
 			if list[left] == list[right] {
 				list[left] += list[right]; 
+				sum += list[left];
 				list[right] = 0; 	
 			} 
 
@@ -48,6 +68,8 @@ impl Board {
 			left = left + 1;
 			right = right + 1; 
 		} 	
+	
+		sum;
 	}
 	
 	// Updates the board, using shift
@@ -86,7 +108,6 @@ impl Board {
 							for j in 0..4 {
 								row.push(self.mat[i][j]); 
 							} 	
-							
 							// By reversing the array, shifting left, and reversing again, 
 							// the shift function, can be repurposed for a right-shift.	
 							row.reverse();
@@ -142,10 +163,52 @@ impl Board {
 
 	
 	}
+	
+	
+	// Returns a boolean if there are no more moves
+	pub fn is_over (& mut self) -> bool {
+		
+		true;
+	} 
 
+	// Ends the game
+	pub fn terminate_game(& mut self) { 
+		
+		// Perform a column-wise walk and row-wise walk
+		for i in 0..self.mat.len() {
+			for j in 0.self.mat[i].len() {
+				if self.mat[i][j] == 0 {
 
-	pub fn terminate_game() { 
-		todo!();
+				}
+			}
+		}
+
+		for i in 0..self.mat.len() {
+			for j in 0.self.mat[i].len() {
+				if self.mat[j][i] == 0 {
+
+				}
+			}
+		}
+
+		self.game_over = false;
+		
+	} 
+	
+
+	// Adds a 2, 4 or an 8 to the board
+	pub fn random_number(& mut self) {
+		
+		mut number : i32 = ... % 8;
+	
+		// Walk through each piece on the board	
+		for i in 0..self.mat.len() {
+			for j in 0.self.mat[i].len() {
+				if self.mat[i][j] == 0 {
+					
+				}
+			}
+		} 
 	} 
  
 } 
