@@ -1,43 +1,42 @@
-#[macro_use] extern crate rocket; 
+#[macro_use] 
+extern crate rocket; 
 use rocket::serde::json::Json; 
-use board::Board; 
-use std::boxed::Box;
 use std::option::Option; 
+
+use board::Board; 
 
 // Serve HTML
 #[get("/")]
 fn index() -> Json() {	
-	const filepath = "../../2048.html";
+	const filepath = "./static/2048.html";
 	let serving = rocket::fs::NamedFile(filepath); 
-	Json(serving)
+	return serving;
 }
 
 // Returns JSON of the new game state
 #[get("/gamestate")]
-fn handle_get(board: Option<& mut Board>) -> _ { 
-	todo!();	
+fn handle_get(board: Option<& mut Board>) -> Json(&Board) { 
+	Json(board.unwrap());	
 } 
 
-// Takes user's keystroke and updates board
-#[post("/keystroke")]
-fn handle_post(data: KeyStroke, board: Option<& mut Board> ) {
+// Waiting for user's keystroke and then returns
+#[post("/keystroke"), data = "<data>"]
+async fn handle_post(data: KeyStroke, mut board: Option<& mut Board>) ->Json(&Board) {
 
-	// Do something to update the state of the game	
-
-	board.moves = board.moves + 1; 	
-	if !board.terminate_game() {
-		board.update_board(data); 
+	if !board.is_over() {
+		board.update(data); 
+		board.moves = board.moves + 1; 
+		board.score = board.score + ...; 
+		
 	} else {
-		return Json(board.final_state()); 
+		return Json(board.unwrap()); 
 	} 
 }
 
 // Returns 404 error msg
 #[catch(404)]
-fn not_found() -> ... {	
-	// Do something like this...
-	let error = "Error route not supported by the server."; 
-	return error; 
+fn not_found() -> &'static str {	
+	return "Error route not supported by the server."; 
 }
 
 #[launch]
@@ -45,7 +44,7 @@ fn rocket() -> _ {
 	
 	// Do something with the board
 	// Unsure of syntax
-	let mut board = Option<Board::new()>; 
+	let mut board = Some(Board::new()); 
 
 	// Serve's HTML, and waits for GET and POST requests
 	rocket::build()
