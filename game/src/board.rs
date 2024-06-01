@@ -1,20 +1,18 @@
-use std::option::Option; 
-use std::boxed::Box; 
 use rocket::serde::json::Json; 
 
 pub enum KeyStroke {
-	NO_KEY, 				// No key pressed
-	KEY_LEFT, 
-	KEY_RIGHT, 				// ... Right arrow pressed
-	KEY_DOWN, 
-	KEY_UP,					// ... Up arrow pressed
+	NoKey, 				// No key pressed
+	KeyLeft, 
+	KeyRight, 				// ... Right arrow pressed
+	KeyDown, 
+	KeyUp,					// ... Up arrow pressed
 }
 
 
 #[derive(Deserialize, Serialize)]
 #[serde(crate = "rocket::serde")]
 pub struct Board {
-	mat : [i32; 4]; 4],		// The board
+	mat : [[i32; 4]; 4],		// The board
 	game_over: bool, 		 
 	moves: i64, 			// The number of moves (key's pressed)	
 	score: i64, 			
@@ -22,21 +20,14 @@ pub struct Board {
 
 impl Board {
 
-	// Initializes the board	
-	pub fn new (& mut self) -> &Board {
-		
-		for i in 0..self.mat.len() {
-			for j in 0.self.mat[i].len() {
-				self[i][j] = 0; 
-			}
+	// Returns an initialized board
+	pub fn new (& mut self) -> Board {
+		Board {
+			mat: [[0; 4]; 4],
+			game_over: false,
+			moves: 0,
+			score: 0,
 		}
-
-		self.game_over = false;
-		self.moves = 0;
-		self.score = 0; 
-
-		self;
-
 	} 
 
 	// Performs a shift to the left 
@@ -69,7 +60,7 @@ impl Board {
 			right = right + 1; 
 		} 	
 	
-		sum;
+		sum
 	}
 	
 	// Updates the board, using shift
@@ -136,7 +127,8 @@ impl Board {
 							for j in 0..4 {
 								board[i][j] = col[i]; 
 							} 	
-					}, 
+						}
+					},
 						
 					KEY_DOWN => {
 
@@ -155,20 +147,17 @@ impl Board {
 							for j in 0..4 {
 								board[i][j] = col[i]; 
 							} 	
-
-					}, 
- 				} 		
-			} 
-		} 	
-
-	
-	}
+						}
+ 					}, 		
+				}	// match statement	 
+			} 	
+		}	
+	} // end function
 	
 	
 	// Returns a boolean if there are no more moves
 	pub fn is_over (& mut self) -> bool {
-		
-		true;
+		true
 	} 
 
 	// Ends the game
@@ -176,7 +165,7 @@ impl Board {
 		
 		// Perform a column-wise walk and row-wise walk
 		for i in 0..self.mat.len() {
-			for j in 0.self.mat[i].len() {
+			for j in 0..self.mat[i].len() {
 				if self.mat[i][j] == 0 {
 
 				}
@@ -184,7 +173,7 @@ impl Board {
 		}
 
 		for i in 0..self.mat.len() {
-			for j in 0.self.mat[i].len() {
+			for j in 0..self.mat[i].len() {
 				if self.mat[j][i] == 0 {
 
 				}
@@ -199,18 +188,17 @@ impl Board {
 	// Adds a 2, 4 or an 8 to the board
 	pub fn random_number(& mut self) {
 		
-		mut number : i32 = ... % 8;
+	let mut number : i32 = ... % 8;
 	
 		// Walk through each piece on the board	
 		for i in 0..self.mat.len() {
-			for j in 0.self.mat[i].len() {
+			for j in 0..self.mat[i].len() {
 				if self.mat[i][j] == 0 {
 					
 				}
 			}
 		} 
 	} 
- 
 } 
 
 
