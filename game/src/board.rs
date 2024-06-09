@@ -1,4 +1,4 @@
-use rocket::serde::json::Json; 
+use rocket::serde::json::Json;
 
 pub enum KeyStroke {
 	NoKey, 				// No key pressed
@@ -33,16 +33,16 @@ impl Board {
 	// Performs a shift to the left 
 	// i.e. let l = [4, 0, 0, 4], then shift(l) -> [4, 4, 0, 0].
 	// do shift(l) again, and I get [8, 0, 0, 0], buggy as of now. 
-	fn shift(list :&mut Vec<usize>) -> u32 {
+	fn shift(list :&mut Vec<usize>) -> i32 {
 		let mut left: usize = 0; 
 		let mut right: usize = left + 1; 
-		let mut sum : u32 = 0; 
+		let mut sum : i32 = 0; 
 
 		// Combine if adjacents are the same
 		for _ in 0..3 {
 			if list[left] == list[right] {
 				list[left] += list[right]; 
-				sum += list[left];
+				sum += list[left] as i32;
 				list[right] = 0; 	
 			} 
 
@@ -67,85 +67,85 @@ impl Board {
 	pub fn update_board(& mut self, key: KeyStroke) {
 		
 		for i in 0..self.mat.len() {
-			for j in 0..self.mat[i].len() {
+			for _j in 0..self.mat[i].len() {
 				
 				match key {
-					NO_KEY => continue, 
+					KeyStroke::NoKey => continue, 
 
-					KEY_LEFT =>  {
+					KeyStroke::KeyLeft =>  {
 						// Copies row of the board into a Vec
 						for i in 0..4 {
 							let mut row: Vec<usize> = Vec::new(); 
 							for j in 0..4 {
-								row.push(self.mat[i][j]); 
+								row.push(self.mat[i][j] as usize); 
 							} 	
 						
 							// Buggy code below, need shift to be called once!! 	
 							// Does a left-shift, and copies the row back into the board
-							shift(&mut row); 
-							shift(&mut row); 
+							Self::shift(&mut row); 
+							Self::shift(&mut row); 
 							
 							for j in 0..4 { 
-								board[i][j] = row[j]; 
+								self.mat[i][j] = row[j] as i32; 
 							} 
 						} 
 
 					}, 
 				
-					KEY_RIGHT => {	
+					KeyStroke::KeyRight => {	
 						// Copies row of the board into a Vec
 						for i in 0..4 {
 							let mut row: Vec<usize> = Vec::new(); 
 							for j in 0..4 {
-								row.push(self.mat[i][j]); 
+								row.push(self.mat[i][j] as usize); 
 							} 	
 							// By reversing the array, shifting left, and reversing again, 
 							// the shift function, can be repurposed for a right-shift.	
 							row.reverse();
-							shift(&mut row); 
-							shift(&mut row); 
+							Self::shift(&mut row); 
+							Self::shift(&mut row); 
 							row.reverse();
 							
 							for j in 0..4 { 
-								board[i][j] = row[j]; 
+								self.mat[i][j] = row[j] as i32;
 							} 
 						} 
 					}, 
 				
-					KEY_UP => {
+					KeyStroke::KeyUp => {
 					
 						// Copies the columns into a Vec	
 						for i in 0..4 {
 							let mut col: Vec<usize> = Vec::new(); 	
 							for j in 0..4 {
-								col.push(self.mat[j][i]); 
+								col.push(self.mat[j][i] as usize); 
 							} 
 					
-							shift(&mut col); 
-							shift(&mut col); 
-							
+							Self::shift(&mut col); 
+							Self::shift(&mut col); 
+								
 							for j in 0..4 {
-								board[i][j] = col[i]; 
+								self.mat[i][j] = col[i] as i32;
 							} 	
 						}
 					},
 						
-					KEY_DOWN => {
+					KeyStroke::KeyDown => {
 
 						// Copies the columns into a Vec	
 						for i in 0..4 {
 							let mut col: Vec<usize> = Vec::new(); 	
 							for j in 0..4 {
-								col.push(self.mat[j][i]); 
+								col.push(self.mat[j][i] as usize); 
 							} 
 							
 							col.reverse(); 	
-							shift(&mut col); 
-							shift(&mut col); 
+							Self::shift(&mut col); 
+							Self::shift(&mut col); 
 							col.reverse(); 	
 							
 							for j in 0..4 {
-								board[i][j] = col[i]; 
+								self.mat[i][j] = col[i] as i32; 
 							} 	
 						}
  					}, 		
