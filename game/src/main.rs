@@ -1,27 +1,28 @@
-#[macro_use] 
-extern crate rocket; 
-use rocket::serde::json::Json; 
-use std::option::Option; 
+#![feature(proc_macro_hygiene, decl_macro)]
 
-use board::Board; 
+#[macro_use] extern crate rocket;
+use rocket_contrib::json::Json;
+use serde::Deserialize;
+
+mod board;
 
 // Serve HTML
 #[get("/")]
-fn index() -> Json() {	
-	const filepath = "./static/2048.html";
+fn index() -> rocket::fs::NamedFile {	
+	const filepath: &str = "./static/2048.html";
 	let serving = rocket::fs::NamedFile(filepath); 
 	return serving;
 }
 
 // Returns JSON of the new game state
 #[get("/gamestate")]
-fn handle_get(board: Option<& mut Board>) -> Json(&Board) { 
-	Json(board.unwrap());	
+fn handle_get(board: Option<& mut Board>) -> Json(Board) { 
+	Json(board.unwrap())
 } 
 
 // Waiting for user's keystroke and then returns
-#[post("/keystroke"), data = "<data>"]
-async fn handle_post(data: KeyStroke, mut board: Option<& mut Board>) ->Json(&Board) {
+#[post("/keystroke", format="json", data="<data>")]
+async fn handle_post(data: KeyStroke, mut board: Option<& mut Board>) ->Json<Board> {
 
 	if !board.is_over() {
 		board.update(data); 
@@ -43,13 +44,12 @@ fn not_found() -> &'static str {
 fn rocket() -> _ {
 	
 	// Do something with the board
-	// Unsure of syntax
-	let mut board = Some(Board::new()); 
+	let mut board = Board::new();
 
 	// Serve's HTML, and waits for GET and POST requests
 	rocket::build()
 		.mount("/", routes![index])
 		.mount("/keystroke", routes![index])
-		.mount("/gamestate", routes![index]); 
+		.mount("/gamestate", routes![index])
 }
 
