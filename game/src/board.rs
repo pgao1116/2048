@@ -185,19 +185,25 @@ impl Board {
 	} 
 	
 
-	// Adds a 2, 4 or an 8 to the board
+	// Adds a 2, 4 to the board
 	pub fn random_number(& mut self) {
 		
-	let mut number : i32 = ... % 8;
+	let number : i32 = ( (((self.score + 1) % 4) / 2) * 2 + 2) as i32;
+	let mut count : u32 = 0; 
 	
 		// Walk through each piece on the board	
 		for i in 0..self.mat.len() {
 			for j in 0..self.mat[i].len() {
 				if self.mat[i][j] == 0 {
-					
+					self.mat[i][j] = number;		
+					count = count + 1; 
 				}
+
+				if count == 1 {
+					return; 
+				} 
 			}
-		} 
+		}
 	} 
 } 
 
