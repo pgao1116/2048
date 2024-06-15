@@ -82,8 +82,9 @@ impl Board {
 						
 							// Buggy code below, need shift to be called once!! 	
 							// Does a left-shift, and copies the row back into the board
-							Self::shift(&mut row); 
-							Self::shift(&mut row); 
+							self.score += Self::shift(&mut row); 
+							self.score += Self::shift(&mut row); 	
+							self.moves += 1;
 							
 							for j in 0..4 { 
 								self.mat[i][j] = row[j] as i32; 
@@ -102,9 +103,10 @@ impl Board {
 							// By reversing the array, shifting left, and reversing again, 
 							// the shift function, can be repurposed for a right-shift.	
 							row.reverse();
-							Self::shift(&mut row); 
-							Self::shift(&mut row); 
+							self.score += Self::shift(&mut row); 
+							self.score += Self::shift(&mut row); 	
 							row.reverse();
+							self.moves += 1;
 							
 							for j in 0..4 { 
 								self.mat[i][j] = row[j] as i32;
@@ -121,8 +123,11 @@ impl Board {
 								col.push(self.mat[j][i] as usize); 
 							} 
 					
-							Self::shift(&mut col); 
-							Self::shift(&mut col); 
+							// Does a left-shift, and copies the col back into the board
+							self.score += Self::shift(&mut col); 
+							self.score += Self::shift(&mut col); 	
+							self.moves += 1;
+
 								
 							for j in 0..4 {
 								self.mat[i][j] = col[i] as i32;
@@ -140,9 +145,10 @@ impl Board {
 							} 
 							
 							col.reverse(); 	
-							Self::shift(&mut col); 
-							Self::shift(&mut col); 
+							self.score += Self::shift(&mut col); 
+							self.score += Self::shift(&mut col); 	
 							col.reverse(); 	
+							self.moves += 1;
 							
 							for j in 0..4 {
 								self.mat[i][j] = col[i] as i32; 
@@ -157,30 +163,35 @@ impl Board {
 	
 	// Returns a boolean if there are no more moves
 	pub fn is_over (& mut self) -> bool {
-		true
+		self.game_over
 	} 
 
 	// Ends the game
 	pub fn terminate_game(& mut self) { 
 		
-		// Perform a column-wise walk and row-wise walk
+		// Search all positions for a 0
 		for i in 0..self.mat.len() {
 			for j in 0..self.mat[i].len() {
 				if self.mat[i][j] == 0 {
+					self.game_over = false;
+					return; // Early return since empty space is available and move is possible
+				}
+			}
+		}
+
+		// Perform a column-wise walk and row-wise walk
+		for i in 0..self.mat.len() { 			// 0..4
+			for j in 0..self.mat[i].len() - 1 { // 0..3
+				if self.mat[i][j] == self.mat[i][j + 1] ||
+				   self.mat[j][i] == self.mat[j + 1][i] {
+						self.game_over = false;
+						return; // Early return since adjacents are the same and move is possible
 
 				}
 			}
 		}
 
-		for i in 0..self.mat.len() {
-			for j in 0..self.mat[i].len() {
-				if self.mat[j][i] == 0 {
-
-				}
-			}
-		}
-
-		self.game_over = false;
+		self.game_over = true;
 		
 	} 
 	
