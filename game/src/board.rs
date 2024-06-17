@@ -1,5 +1,10 @@
-use rocket::serde::json::Json;
+// use rocket::serde::json::Json;
+use serde::Deserialize;
+use serde::Serialize;
 
+
+#[derive(Deserialize, Serialize, Clone)]
+#[serde(crate = "rocket::serde")]
 pub enum KeyStroke {
 	NoKey, 				// No key pressed
 	KeyLeft, 
@@ -9,7 +14,7 @@ pub enum KeyStroke {
 }
 
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub struct Board {
 	mat : [[i32; 4]; 4],		// The board
@@ -21,7 +26,7 @@ pub struct Board {
 impl Board {
 
 	// Returns an initialized board
-	pub fn new (& mut self) -> Board {
+	pub fn new () -> Board {
 		Board {
 			mat: [[0; 4]; 4],
 			game_over: false,
@@ -33,16 +38,16 @@ impl Board {
 	// Performs a shift to the left 
 	// i.e. let l = [4, 0, 0, 4], then shift(l) -> [4, 4, 0, 0].
 	// do shift(l) again, and I get [8, 0, 0, 0], buggy as of now. 
-	fn shift(list :&mut Vec<usize>) -> i32 {
+	fn shift(list :&mut Vec<usize>) -> i64 {
 		let mut left: usize = 0; 
 		let mut right: usize = left + 1; 
-		let mut sum : i32 = 0; 
+		let mut sum : i64 = 0; 
 
 		// Combine if adjacents are the same
 		for _ in 0..3 {
 			if list[left] == list[right] {
 				list[left] += list[right]; 
-				sum += list[left] as i32;
+				sum += list[left] as i64;
 				list[right] = 0; 	
 			} 
 
