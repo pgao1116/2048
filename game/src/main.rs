@@ -2,7 +2,7 @@
 #[macro_use] extern crate rocket;
 
 use rocket::serde::json::Json;
-use rocket::fs::NamedFile;
+use rocket::fs::{FileServer, NamedFile};
 use rocket::State;
 
 mod board;
@@ -16,7 +16,7 @@ async fn index() -> NamedFile {
 	// let serving = rocket::fs::NamedFile(filepath); 
 	// return serving;
 
-	NamedFile::open("../static/2048.html").await.unwrap()
+	NamedFile::open("static/2048.html").await.unwrap()
 }
 
 // Returns JSON of the new game state
@@ -52,9 +52,8 @@ fn rocket() -> _ {
 
 	// Serve's HTML, and waits for GET and POST requests
 	rocket::build()
-		.mount("/", routes![index])
-		.mount("/keystroke", routes![handle_post])
-		.mount("/gamestate", routes![handle_get])
+		.mount("/", routes![index, handle_get, handle_post])
+		.mount("/static", FileServer::from("static"))
 		.register("/", catchers![not_found])
 		.manage(board)
 }
