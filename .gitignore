@@ -1,5 +1,5 @@
 # Files for git to ignore
 #https://stackoverflow.com/questions/43667176/what-files-in-a-cargo-project-should-be-in-my-gitignore
-./target/*
+target/*
 **/.vscode/
 **/.DS_Store
