@@ -6,11 +6,11 @@ use serde::Serialize;
 #[derive(Deserialize, Serialize, Clone)]
 #[serde(crate = "rocket::serde")]
 pub enum KeyStroke {
-	NoKey, 				// No key pressed
-	KeyLeft, 
-	KeyRight, 				// ... Right arrow pressed
-	KeyDown, 
-	KeyUp,					// ... Up arrow pressed
+	NoKey = 0, 				// No key pressed
+	KeyLeft = 1, 
+	KeyRight = 2, 				// ... Right arrow pressed
+	KeyDown = 3, 
+	KeyUp = 4,					// ... Up arrow pressed
 }
 
 
@@ -18,21 +18,26 @@ pub enum KeyStroke {
 #[serde(crate = "rocket::serde")]
 pub struct Board {
 	mat : [[i32; 4]; 4],		// The board
-	game_over: bool, 		 
-	moves: i64, 			// The number of moves (key's pressed)	
-	score: i64, 			
+	pub game_over: bool, 		 
+	pub moves: i64, 			// The number of moves (key's pressed)	
+	pub score: i64, 			
 } 
 
 impl Board {
 
 	// Returns an initialized board
 	pub fn new () -> Board {
-		Board {
+		let mut brd : Board = Board {
 			mat: [[0; 4]; 4],
 			game_over: false,
 			moves: 0,
 			score: 0,
-		}
+		};
+
+		// Start the game and return the board, assuming Board::new() gets called once, at the start of the game
+		// brd.start_game();
+
+		brd
 	} 
 
 	// Performs a shift to the left 
@@ -89,13 +94,13 @@ impl Board {
 							// Does a left-shift, and copies the row back into the board
 							self.score += Self::shift(&mut row); 
 							self.score += Self::shift(&mut row); 	
-							self.moves += 1;
 							
 							for j in 0..4 { 
 								self.mat[i][j] = row[j] as i32; 
 							} 
 						} 
 
+						self.moves += 1; // Update the moves at the end
 					}, 
 				
 					KeyStroke::KeyRight => {	
@@ -111,12 +116,13 @@ impl Board {
 							self.score += Self::shift(&mut row); 
 							self.score += Self::shift(&mut row); 	
 							row.reverse();
-							self.moves += 1;
 							
 							for j in 0..4 { 
 								self.mat[i][j] = row[j] as i32;
 							} 
 						} 
+						
+						self.moves += 1;
 					}, 
 				
 					KeyStroke::KeyUp => {
@@ -131,13 +137,13 @@ impl Board {
 							// Does a left-shift, and copies the col back into the board
 							self.score += Self::shift(&mut col); 
 							self.score += Self::shift(&mut col); 	
-							self.moves += 1;
 
 								
 							for j in 0..4 {
 								self.mat[i][j] = col[i] as i32;
 							} 	
 						}
+							self.moves += 1;
 					},
 						
 					KeyStroke::KeyDown => {
@@ -153,12 +159,12 @@ impl Board {
 							self.score += Self::shift(&mut col); 
 							self.score += Self::shift(&mut col); 	
 							col.reverse(); 	
-							self.moves += 1;
 							
 							for j in 0..4 {
 								self.mat[i][j] = col[i] as i32; 
 							} 	
 						}
+							self.moves += 1;
  					}, 		
 				}	// match statement	 
 			} 	
@@ -199,6 +205,7 @@ impl Board {
 		self.game_over = true;
 		
 	} 
+
 	
 
 	// Adds a 2, 4 to the board
