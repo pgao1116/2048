@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 const startGame = document.querySelector('start');
 const gameContainer = document.querySelector('.game-container');
 const score = document.querySelector('.score');
@@ -12,6 +11,50 @@ let gameData = [];
 let currentScore = 0;
 let best = 0;
 let isGameOver = false;
+
+
+const fetchGameState = async () => {
+
+	try {
+
+		// The default HTTP method is GET
+		const resp = await fetch("http://localhost:8000/gamestate");
+		if (!resp) {
+			throw new Error(`http status: ${resp.status}`);
+		}
+
+		return await resp.json();
+
+	} catch (err) {
+		console.error("couldn't fetch state:" err); 
+	}
+
+};
+
+
+const sendKeyStroke = async (keystroke) => {
+	
+	try {	
+		const resp = await fetch ("http://localhost:8000/keystroke", {
+			method: "POST", 
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({[keystroke]: null}), 
+		
+		});
+
+		if (!resp.ok) {
+			throw new Error(`http status: ${resp.status}`);
+		}
+
+		return await resp.json(); 
+
+	} catch (err) {
+		console.error("couldn't send keystroke:" err); 
+	}
+
+};
     
 startGame.addEventListener('click', (e) => {
   e.preventDefault;
@@ -49,28 +92,5 @@ render = () => {
   score.innerHTML = currentScore;
 }
 
-addNumber = () => {
-  const emptyCells = [];
-  gameData.forEach((row, i) => {
-    row.forEach((cell, j) => {
-      if (cell === 0) {
-        emptyCells.push({ i, j });
-      }
-    })
-  })
-  if (emptyCells.length === 0) {
-    return;
-  }
-  const { i, j } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-  gameData[i][j] = Math.random() > 0.5 ? 2 : 4;
-  render();
-}
 
-=======
-// https://www.topcoder.com/thrive/articles/fetch-api-javascript-how-to-make-get-and-post-requests
 
-endpoint = "localhost:8080/test"
-fetch(endpoint)
-	.then(response => {
-		console.log(response); 
-	})
