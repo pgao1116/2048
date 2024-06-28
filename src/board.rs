@@ -1,6 +1,7 @@
 // use rocket::serde::json::Json;
 use serde::Deserialize;
 use serde::Serialize;
+use rand::Rng; 
 
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
@@ -14,7 +15,7 @@ pub enum KeyStroke {
 }
 
 
-#[derive(Deserialize, Serialize, Clone)]
+#[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(crate = "rocket::serde")]
 pub struct Board {
 	mat : [[i32; 4]; 4],		// The board
@@ -75,6 +76,7 @@ impl Board {
 	
 	// Updates the board, using shift
 	pub fn update_board(& mut self, key: KeyStroke) {
+		let old_board = self.mat.clone();
 			
 		match key {
 			KeyStroke::NoKey => return, 
@@ -160,9 +162,15 @@ impl Board {
 			}, 		
 
 		}	// match statement	 
-		
-		self.moves += 1;
-	} // end function
+	
+		if self.mat != old_board {	
+			self.moves += 1;
+			self.random_number(); 
+		} 
+
+		self.game_over = self.is_game_over();
+
+	} 
 	
 	
 	// Returns a boolean if there are no more moves
@@ -170,57 +178,57 @@ impl Board {
 		self.game_over
 	} 
 
-	// Ends the game
-	pub fn terminate_game(& mut self) { 
-		
-		// Search all positions for a 0
-		for i in 0..self.mat.len() {
-			for j in 0..self.mat[i].len() {
-				if self.mat[i][j] == 0 {
-					self.game_over = false;
-					return; // Early return since empty space is available and move is possible
-				}
-			}
-		}
+	pub fn is_game_over(&self) -> bool {
+    	// Check for empty cells
+    	for row in &self.mat {
+        	if row.iter().any(|&cell| cell == 0) {
+            	return false; // Game is not over if there's an empty cell
+        	}
+    	}
 
-		// Perform a column-wise walk and row-wise walk
-		for i in 0..self.mat.len() { 			// 0..4
-			for j in 0..self.mat[i].len() - 1 { // 0..3
-				if self.mat[i][j] == self.mat[i][j + 1] ||
-				   self.mat[j][i] == self.mat[j + 1][i] {
-						self.game_over = false;
-						return; // Early return since adjacents are the same and move is possible
+    	// Check for adjacent matching cells
+    	for i in 0..4 {
+        	for j in 0..3 {
+            	// Check horizontally
+            	if self.mat[i][j] == self.mat[i][j + 1] {
+                	return false; // Game is not over if there are adjacent matching cells
+            	}
+            	// Check vertically
+            	if self.mat[j][i] == self.mat[j + 1][i] {
+                	return false; // Game is not over if there are adjacent matching cells
+            	}
+        	}
+    	}
 
-				}
-			}
-		}
-
-		self.game_over = true;
-		
-	} 
+    	true // If we've reached here, the game is over
+	}
 
 	
 
 	// Adds a 2, 4 to the board
 	pub fn random_number(& mut self) {
+		let mut empty_cells = Vec::new(); 
 		
-	let number : i32 = ( (((self.score + 1) % 4) / 2) * 2 + 2) as i32;
-	let mut count : u32 = 0; 
-	
-		// Walk through each piece on the board	
 		for i in 0..self.mat.len() {
 			for j in 0..self.mat[i].len() {
 				if self.mat[i][j] == 0 {
-					self.mat[i][j] = number;		
-					count = count + 1; 
-				}
-
-				if count == 1 {
-					return; 
-				} 
+					empty_cells.push((i, j)); 
+				}	
 			}
 		}
+
+
+		if !empty_cells.is_empty() {
+			let mut rng = rand::thread_rng(); 
+			let (i, j) = empty_cells[rng.gen_range(0..empty_cells.len())];
+			let new_number = if rng.gen_bool(0.9) {2} else {4}; 
+			println!("[info] new numb at {} at pos: ({}, {})", self.mat[i][j], i, j);
+			self.mat[i][j] = new_number; 
+	
+		} else {
+			println!("[info] no new numb to add"); 
+		}	
 	} 
-} 
+}
 
 
