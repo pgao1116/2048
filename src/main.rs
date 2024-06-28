@@ -8,31 +8,34 @@ use rocket::State;
 mod board;
 use board::Board;
 use board::KeyStroke;
+use std::sync::Mutex;
 
 // Serve HTML
 #[get("/")]
 async fn index() -> NamedFile {	
-	// const filepath: &str = "./static/2048.html";
-	// let serving = rocket::fs::NamedFile(filepath); 
-	// return serving;
-
 	NamedFile::open("static/2048.html").await.unwrap()
 }
 
 // Returns JSON of the new game state
 #[get("/gamestate")]
-fn handle_get(board: &State<Board>) -> Json<Board> { 
-	Json(board.inner().clone())
+fn handle_get(board: &State<Mutex<Board>>) -> Json<Board> { 
+	let board = board.lock().unwrap();
+	Json(board.clone())
 } 
 
 // Waiting for user's keystroke and then returns
 #[post("/keystroke", format="json", data="<data>")]
-fn handle_post(data: Json<KeyStroke>, board: &State<Board>) ->Json<Board> {
+fn handle_post(data: Json<KeyStroke>, board: &State<Mutex<Board>>) ->Json<Board> {
 
-	let mut board = board.inner().clone();
+	println!("{:?}", data); 
+	let mut board = board.lock().unwrap();
+
+	// If the key pressed is NoKey, and game just started, then
 
 	if !board.is_over() {
-		board.update_board(data.into_inner()); 	
+		board.update_board(data.into_inner()); 			
+		board.terminate_game();
+		// return Json(board.clone())
 	} 
 
 	Json(board.clone())
@@ -48,7 +51,7 @@ fn not_found() -> &'static str {
 fn rocket() -> _ {
 	
 	// Do something with the board
-	let board = Board::new();
+	let board = Mutex::new(Board::new());
 
 	// Serve's HTML, and waits for GET and POST requests
 	rocket::build()
