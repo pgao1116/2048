@@ -445,6 +445,7 @@ name = "game"
 version = "0.1.0"
 dependencies = [
  "pear 0.1.5",
+ "rand",
  "rocket 0.5.1",
  "rocket_contrib",
  "serde",
