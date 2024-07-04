@@ -1,96 +1,76 @@
-const startGame = document.querySelector('start');
-const gameContainer = document.querySelector('.game-container');
-const score = document.querySelector('.score');
-const bestScore = document.querySelector('.best-score');
-const board = document.querySelector('.board');
-const gameOver = document.querySelector('.game-over');
-const gameOverScore = document.querySelector('.game-over-score');
-const gameOverBestScore = document.querySelector('.game-over-best-score');
-const restart = document.querySelector('.restart');
-let gameData = [];
-let currentScore = 0;
-let best = 0;
-let isGameOver = false;
-
-
 const fetchGameState = async () => {
-
-	try {
-
-		// The default HTTP method is GET
-		const resp = await fetch("http://localhost:8000/gamestate");
-		if (!resp) {
-			throw new Error(`http status: ${resp.status}`);
-		}
-
-		return await resp.json();
-
-	} catch (err) {
-		console.error("couldn't fetch state:" err); 
-	}
-
+    try {
+        const resp = await fetch("http://localhost:8000/gamestate");
+        if (!resp.ok) {
+            throw new Error(`http status: ${resp.status}`);
+        }
+        return await resp.json();
+    } catch (err) {
+        console.error("couldn't fetch state:", err); 
+        return null;
+    }
 };
 
+const sendKeyStroke = async (keystroke) => {    
+    try {    
+        const resp = await fetch("http://localhost:8000/keystroke", {
+            method: "POST", 
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            },
+            body: JSON.stringify({ [keystroke]: null }),     
+        });
 
-const sendKeyStroke = async (keystroke) => {
-	
-	try {	
-		const resp = await fetch ("http://localhost:8000/keystroke", {
-			method: "POST", 
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({[keystroke]: null}), 
-		
-		});
-
-		if (!resp.ok) {
-			throw new Error(`http status: ${resp.status}`);
-		}
-
-		return await resp.json(); 
-
-	} catch (err) {
-		console.error("couldn't send keystroke:" err); 
-	}
-
-};
+        if (!resp.ok) { throw new Error(`http status: ${resp.status}`); }
+        return await resp.json(); 
     
-startGame.addEventListener('click', (e) => {
-  e.preventDefault;
-  startGame.style.display = 'none';
-  gameContainer.style.display = 'flex';
-  init();
-})
+    } catch (err) {
+        console.error("couldn't send keystroke:", err); 
+    }
+};
 
-init = () => {
-  gameData = Array.from({ length: 4 }, () => Array.from({ length: 4 }, () => 0));
-  currentScore = 0;
-  isGameOver = false;
-  best = localStorage.getItem('best') ? localStorage.getItem('best') : 0;
-  bestScore.innerHTML = best;
-  gameOver.style.display = 'none';
-  gameOverScore.innerHTML = 0;
-  gameOverBestScore.innerHTML = 0;
-  render();
-  addNumber();
-  addNumber();
-}
+const updateGrid = (grid) => {
+    grid.forEach((row, rowIndex) => {
+        row.forEach((value, colIndex) => {
+            const block = document.getElementById(`block${rowIndex * 4 + colIndex + 1}`);
+            block.textContent = value === 0 ? '' : value;
+            block.dataset.value = value;
+        });
+    });
+};
 
-render = () => {
-  board.innerHTML = '';
-  gameData.forEach((row, i) => {
-    row.forEach((cell, j) => {
-      if (cell > 0) {
-        const cellElem = document.createElement('div');
-        cellElem.classList.add(`cell-${i}-${j}`, 'cell');
-        cellElem.innerHTML = cell;
-        board.appendChild(cellElem);
-      }
-    })
-  })
-  score.innerHTML = currentScore;
-}
+document.addEventListener("DOMContentLoaded", async function () {
+    try {
+        const gameState = await fetchGameState();
+        if (gameState) {
+            document.getElementById("score").textContent = gameState.score;
+            document.getElementById("best").textContent = gameState.best;
+            updateGrid(gameState.mat);
+        } else {
+            console.error("Failed to fetch game state");
+        }
+    } catch (error) {
+        console.error("Error in DOMContentLoaded event listener:", error);
+    }
+});
 
+document.addEventListener("keydown", async function (event) {
+    const keyMap = {
+        ArrowUp: 'KeyUp',
+        ArrowDown: 'KeyDown',
+        ArrowLeft: 'KeyLeft',
+        ArrowRight: 'KeyRight'
+    };
 
+    if (keyMap[event.key]) {
+        await sendKeyStroke(keyMap[event.key]);
+        const gameState = await fetchGameState();
+        if (gameState) {
+            document.getElementById("score").textContent = gameState.score;
+            document.getElementById("best").textContent = gameState.best;
+            updateGrid(gameState.mat);
+        }
+    }
+});
 
