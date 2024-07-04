@@ -30,6 +30,21 @@ const sendKeyStroke = async (keystroke) => {
     }
 };
 
+const restartGame = async () => {
+    try {
+        const gameState = await sendKeyStroke('RestartGame');
+        if (gameState) {
+            document.getElementById("score").textContent = gameState.score;
+            document.getElementById("best").textContent = gameState.best;
+            updateGrid(gameState.mat);
+        } else {
+            console.error("Failed to fetch game state after restart");
+        }
+    } catch (err) {
+        console.error("couldn't restart game:", err); 
+    }
+};
+
 const updateGrid = (grid) => {
     grid.forEach((row, rowIndex) => {
         row.forEach((value, colIndex) => {
@@ -55,16 +70,23 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 });
 
+
+// Main loop...
 document.addEventListener("keydown", async function (event) {
     const keyMap = {
         ArrowUp: 'KeyUp',
         ArrowDown: 'KeyDown',
         ArrowLeft: 'KeyLeft',
-        ArrowRight: 'KeyRight'
+        ArrowRight: 'KeyRight',
+        r: 'RestartGame' // Added Restart Game key
     };
 
     if (keyMap[event.key]) {
-        await sendKeyStroke(keyMap[event.key]);
+        if (keyMap[event.key] === 'RestartGame') {
+            await restartGame();
+        } else {
+            await sendKeyStroke(keyMap[event.key]);
+        }
         const gameState = await fetchGameState();
         if (gameState) {
             document.getElementById("score").textContent = gameState.score;
@@ -72,5 +94,10 @@ document.addEventListener("keydown", async function (event) {
             updateGrid(gameState.mat);
         }
     }
+});
+
+// Add event listener for the Restart Game button
+document.querySelector(".restart").addEventListener("click", async () => {
+    await restartGame();
 });
 
