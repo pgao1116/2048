@@ -4,7 +4,7 @@ use serde::Serialize;
 use rand::Rng; 
 
 
-#[derive(Deserialize, Serialize, Clone, Debug)]
+#[derive(Deserialize, Serialize, Clone, Debug, PartialEq)]
 #[serde(crate = "rocket::serde")]
 pub enum KeyStroke {
 	NoKey = 0, 				// No key pressed
@@ -12,48 +12,48 @@ pub enum KeyStroke {
 	KeyRight = 2, 				// ... Right arrow pressed
 	KeyDown = 3, 
 	KeyUp = 4,					// ... Up arrow pressed
+	RestartGame = 5,	
 }
 
 
 #[derive(Deserialize, Serialize, Clone, Debug)]
 #[serde(crate = "rocket::serde")]
 pub struct Board {
-	mat : [[i32; 4]; 4],		// The board
+	mat : [[u128; 4]; 4],		// The board
 	pub game_over: bool, 		 
-	pub moves: i64, 			// The number of moves (key's pressed)	
-	pub score: i64, 			
+	pub moves: u128, 			// The number of moves (key's pressed)	
+	pub score: u128, 			
 } 
 
 impl Board {
 
 	// Returns an initialized board
 	pub fn new () -> Board {
-		let mut brd : Board = Board {
+		 Board {
 			mat: [[0; 4]; 4],
 			game_over: false,
 			moves: 0,
 			score: 0,
-		};
+		}
 
 		// Start the game and return the board, assuming Board::new() gets called once, at the start of the game
 		// brd.start_game();
 
-		brd
 	} 
 
 	// Performs a shift to the left 
 	// i.e. let l = [4, 0, 0, 4], then shift(l) -> [4, 4, 0, 0].
 	// do shift(l) again, and I get [8, 0, 0, 0], buggy as of now. 
-	fn shift(list :&mut Vec<usize>) -> i64 {
+	fn shift(list :&mut Vec<u128>) -> u128 {
 		let mut left: usize = 0; 
 		let mut right: usize = left + 1; 
-		let mut sum : i64 = 0; 
+		let mut sum : u128 = 0; 
 
 		// Combine if adjacents are the same
 		for _ in 0..3 {
 			if list[left] == list[right] {
 				list[left] += list[right]; 
-				sum += list[left] as i64;
+				sum += list[left];
 				list[right] = 0; 	
 			} 
 
@@ -84,9 +84,9 @@ impl Board {
 			KeyStroke::KeyLeft =>  {
 				// Copies row of the board into a Vec
 				for i in 0..4 {
-					let mut row: Vec<usize> = Vec::new(); 
+					let mut row: Vec<u128> = Vec::new(); 
 					for j in 0..4 {
-						row.push(self.mat[i][j] as usize); 
+						row.push(self.mat[i][j]); 
 					} 	
 				
 					// Buggy code below, need shift to be called once!! 	
@@ -95,7 +95,7 @@ impl Board {
 					self.score += Self::shift(&mut row); 	
 					
 					for j in 0..4 { 
-						self.mat[i][j] = row[j] as i32; 
+						self.mat[i][j] = row[j]; 
 					} 
 				} 
 			}, 
@@ -103,9 +103,9 @@ impl Board {
 			KeyStroke::KeyRight => {	
 				// Copies row of the board into a Vec
 				for i in 0..4 {
-					let mut row: Vec<usize> = Vec::new(); 
+					let mut row: Vec<u128> = Vec::new(); 
 					for j in 0..4 {
-						row.push(self.mat[i][j] as usize); 
+						row.push(self.mat[i][j]); 
 					} 	
 					// By reversing the array, shifting left, and reversing again, 
 					// the shift function, can be repurposed for a right-shift.	
@@ -115,7 +115,7 @@ impl Board {
 					row.reverse();
 					
 					for j in 0..4 { 
-						self.mat[i][j] = row[j] as i32;
+						self.mat[i][j] = row[j];
 					} 
 				} 
 				
@@ -125,9 +125,9 @@ impl Board {
 			
 				// Copies the columns into a Vec	
 				for i in 0..4 {
-					let mut col: Vec<usize> = Vec::new(); 	
+					let mut col: Vec<u128> = Vec::new(); 	
 					for j in 0..4 {
-						col.push(self.mat[j][i] as usize); 
+						col.push(self.mat[j][i]); 
 					} 
 			
 					// Does a left-shift, and copies the col back into the board
@@ -136,7 +136,7 @@ impl Board {
 
 						
 					for j in 0..4 {
-						self.mat[i][j] = col[i] as i32;
+						self.mat[j][i] = col[j];
 					} 	
 				}
 			},
@@ -145,9 +145,9 @@ impl Board {
 
 				// Copies the columns into a Vec	
 				for i in 0..4 {
-					let mut col: Vec<usize> = Vec::new(); 	
+					let mut col: Vec<u128> = Vec::new(); 	
 					for j in 0..4 {
-						col.push(self.mat[j][i] as usize); 
+						col.push(self.mat[j][i]); 
 					} 
 					
 					col.reverse(); 	
@@ -156,17 +156,35 @@ impl Board {
 					col.reverse(); 	
 					
 					for j in 0..4 {
-						self.mat[i][j] = col[i] as i32; 
+						self.mat[j][i] = col[j]; 
 					} 	
 				}
 			}, 		
 
+			KeyStroke::RestartGame => {
+				
+				self.score = 0;
+				self.moves = 0; 	
+				self.game_over = false;
+				
+				for i in 0..self.mat.len() {
+					for j in 0..self.mat[i].len() {
+						self.mat[i][j] = 0;
+					}
+				}				
+
+			},
+
 		}	// match statement	 
 	
-		if self.mat != old_board {	
+		if self.mat != old_board && key != KeyStroke::RestartGame {	
 			self.moves += 1;
-			self.random_number(); 
-		} 
+			if self.moves % 2 == 0 {
+				self.random_number(); 
+			} 
+		} else if key == KeyStroke::RestartGame {
+			self.moves += 0; 
+		}  
 
 		self.game_over = self.is_game_over();
 
