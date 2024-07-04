@@ -16,7 +16,7 @@ cargo +nightly build && cargo +nightly run
 
 ## How it looks ##
 A minute GIF of the project. 
-![2048](assets/output.mp4)
+![2048](assets/game.mov)
 >>>>>>> d17b812 (readme change, and added video, but something is wrong with its speed)
 
 
